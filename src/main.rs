@@ -16,7 +16,7 @@ use rand::Rng;
 
 use std::time::Instant;
 
-//mod debugger;
+mod debugger;
 use debugger::*;
 
 
@@ -720,6 +720,9 @@ fn main() {
     //---------------------------------------------------------------------------------------------
 
     //---------------------------------Component instatiation-------------------------------------
+    //debugger
+    let debugger = debugger::new();
+
     //Memory - includes regs and rom
     let rom = ROM::new(&filename);
     let mut mem = Memory::new();
