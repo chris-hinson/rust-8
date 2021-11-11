@@ -12,25 +12,25 @@ use std::time::Instant;
 
 //modules for components
 mod debugger;
-use crate::debugger::debugger::debugger as debug;
+use crate::debugger::debugger as debug;
 
 mod rom;
-use crate::rom::rom::ROM as ROM;
+use crate::rom::ROM as ROM;
 
 mod memory;
-use crate::memory::memory::Memory as Memory;
+use crate::memory::Memory as Memory;
 
 mod display;
-use crate::display::display::Display as Display;
+use crate::display::Display as Display;
 
 mod sound;
-use crate::sound::sound::Sound as Sound;
+use crate::sound::Sound as Sound;
 
 mod input;
-use crate::input::input::Input as Input;
+use crate::input::Input as Input;
 
 mod cpu;
-use crate::cpu::cpu::CPU as CPU;
+use crate::cpu::CPU as CPU;
 
 
 fn main() {
