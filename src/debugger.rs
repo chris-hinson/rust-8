@@ -4,9 +4,11 @@ pub mod debugger{
     use sdl2::event::Event;
     use sdl2::keyboard::Keycode;
     use sdl2::event::EventPollIterator;
+    use crate::cpu::cpu::CPU as CPU;
 
     pub struct debugger{
         //pub sdl: Sdl,
+        pub live: bool,
         pub canvas: sdl2::render::Canvas<sdl2::video::Window>,
     }
 
@@ -18,29 +20,33 @@ pub mod debugger{
             let mut debug_canvas = window.into_canvas().build().unwrap();
 
             debugger{
+                live: false,
                 canvas: debug_canvas
             }
         }
 
-        pub fn run(&mut self){
+        pub fn run(&mut self, pump: &mut sdl2::EventPump, cpu: &mut CPU){
 
-            //let mut event_pump = sdl.event_pump().unwrap();
-
-            self.canvas.set_draw_color(Color::GREEN);
-            self.canvas.clear();
-            self.canvas.present();
-
-            /*loop{
-                for event in event_pump.poll_iter(){
+            'running: loop{
+                for event in pump.poll_iter(){
                     match event {
                         Event::Quit { .. } | Event::KeyDown {
                             keycode: Some(Keycode::Escape),
                             ..
-                        } => break ,
+                        } => {self.live = false; break 'running},
                         _ => {},
                     }
                 }
-            }*/
+
+                self.canvas.set_draw_color(Color::GREEN);
+                self.canvas.clear();
+                self.canvas.present();
+
+                println!("we are debugging");
+                println!("cpu PC is: {:#4x}",cpu.PC);
+            }
+
+
 
 
         }

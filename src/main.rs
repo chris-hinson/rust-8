@@ -78,20 +78,29 @@ fn main() {
     //------------------------------------CPU main loop--------------------------------------------
     let mut cpu = CPU::new(mem, disp, sound, input);
 
+    let mut debug_live = false;
+
     'running: loop {
+
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-                Event::KeyDown{keycode: Some(Keycode::Space),..} => debugger.run(),
+                Event::KeyDown{keycode: Some(Keycode::Space),..} => {debugger.live = true; break},
                 //on key press or key release, update our input bool struct
                 Event::KeyDown{..}
                 | Event::KeyUp{..}
                     => cpu.input.update(event),
                 _ => {},
             }
+        }
+
+        if debugger.live
+        {
+            println!("going to debugger");
+            debugger.run(&mut event_pump, &mut cpu);
         }
 
 
