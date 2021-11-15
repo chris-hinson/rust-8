@@ -9,7 +9,7 @@ use sdl2::ttf::Sdl2TtfContext;
 use sdl2::rect::Rect;
 use sdl2::rect::Point;
 
-
+use std::time::Instant;
 
 use crate::cpu::CPU as CPU;
 
@@ -37,6 +37,7 @@ impl debugger{
 
     pub fn run(&mut self, pump: &mut sdl2::EventPump, cpu: &mut CPU){
 
+        let mut run:bool = false;
         let mut font = self.ttf.load_font("/home/chris/Documents/projects/rust-8/src/FiraCode-Regular.ttf",128).unwrap();
         let texture_creator = self.canvas.texture_creator();
 
@@ -81,24 +82,45 @@ impl debugger{
             self.canvas.copy(&cur_ST_texture,None,Some(Rect::new(0,297,150,15)));
 
 
-
-
             //process all events in queue
             for event in pump.poll_iter(){
                 match event {
                     Event::Quit { .. } | Event::KeyDown {
                         keycode: Some(Keycode::Space),
                         ..
-                    } => {self.live = false; break 'running},
-                    Event::KeyDown{keycode: Some(Keycode::N),..} => {
-                        let op = cpu.fetch();
-                        cpu.decodeAndExecute(op);},
+                    } => {
+                        //set debugger to dead and update timers before returning to main function
+                        self.live = false;
+                        cpu.LCC = Instant::now();
+                        cpu.sound.DT_lu = Instant::now();
+                        cpu.sound.ST_lu = Instant::now();
+                        break 'running},
+                    Event::KeyDown{keycode: Some(Keycode::N),..} => run = true,
                     _ => {},
                 }
             }
 
+            //if we hit n key, want to run one cpu cycle
+            if run
+            {
+                let op = cpu.fetch();
+                cpu.decodeAndExecute(op);
+
+                //ST and DT should update cpu_freq/60 times per cpu cycle
+                if cpu.sound.ST > 0
+                {
+                    cpu.sound.ST -= (cpu.freq/60.0) as u8;
+                }
+                if cpu.sound.DT > 0
+                {
+                    cpu.sound.DT -= (cpu.freq/60.0) as u8;
+                }
+                run = false;
+            }
+
 
             self.canvas.present();
+
         }
 
 

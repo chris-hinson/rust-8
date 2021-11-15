@@ -48,8 +48,8 @@ impl CPU {
             PC: 512,
             //500 Mhz
             //freq: 500_000_000,
-            //DEBUG freq 25 Hz for testing
-            freq:50.0,
+            //DEBUG freq 50 Hz for testing
+            freq:60.0,
             LCC: Instant::now(),
             mem: mem,
             disp: disp,
