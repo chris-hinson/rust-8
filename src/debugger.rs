@@ -7,6 +7,7 @@ use sdl2::event::EventPollIterator;
 use sdl2::render::TextureQuery;
 use sdl2::ttf::Sdl2TtfContext;
 use sdl2::rect::Rect;
+use sdl2::rect::Point;
 
 
 
@@ -23,7 +24,7 @@ impl debugger{
     pub fn new(sdl_context: &Sdl)->debugger{
         //let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
-        let window = video_subsystem.window("debugger",400,300).position(0,0).build().unwrap();
+        let window = video_subsystem.window("debugger",600,600).position(0,0).build().unwrap();
         let mut debug_canvas = window.into_canvas().build().unwrap();
         let ttf_context = sdl2::ttf::init().unwrap();
 
@@ -36,35 +37,68 @@ impl debugger{
 
     pub fn run(&mut self, pump: &mut sdl2::EventPump, cpu: &mut CPU){
 
+        let mut font = self.ttf.load_font("/home/chris/Documents/projects/rust-8/src/FiraCode-Regular.ttf",128).unwrap();
+        let texture_creator = self.canvas.texture_creator();
+
         'running: loop{
+            //clear debug screen at beginning of every loop iteration
+            self.canvas.set_draw_color(Color::BLACK);
+            self.canvas.clear();
+            self.canvas.set_draw_color(Color::WHITE);
+
+            //draw current pc and instruction
+            let raw_op = cpu.fetch();
+            let pc_str = format!("{:#04x}: {:04x}",cpu.PC, raw_op);
+            let text_surface = font.render(&pc_str).solid(Color::RGBA(255,255,255,0)).unwrap();
+            let text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
+            self.canvas.copy(&text_texture,None,Some(Rect::new(0,0,100,25)));
+            self.canvas.draw_line(Point::new(0,26),Point::new(101,26));
+            self.canvas.draw_line(Point::new(101,26),Point::new(101,0));
+
+            //draw Vregs
+            for (i,x) in cpu.mem.Vregs.iter().enumerate()
+            {
+                let value = format!("V{}: {:0>8b} : {:#x}",i,x,x);
+                let cur_vreg_surface = font.render(&value).blended(Color::WHITE).unwrap();
+                let cur_vreg_texture = texture_creator.create_texture_from_surface(&cur_vreg_surface).unwrap();
+                self.canvas.copy(&cur_vreg_texture,None,Some(Rect::new(0,(26 + (15 * i+1)) as i32,150,15)));
+            }
+            self.canvas.draw_line(Point::new(0,26),Point::new(151,26));
+            self.canvas.draw_line(Point::new(151,26),Point::new(151,266));
+            //I reg
+            let value = format!("I: {:0>16b} : {:#x}",cpu.mem.I,cpu.mem.I);
+            let cur_Ireg_surface = font.render(&value).solid(Color::WHITE).unwrap();
+            let cur_Ireg_texture = texture_creator.create_texture_from_surface(&cur_Ireg_surface).unwrap();
+            self.canvas.copy(&cur_Ireg_texture,None,Some(Rect::new(0,266,250,15)));
+            //timers
+            let value = format!("DT: {:0>8b} : {:#x}",cpu.sound.DT,cpu.sound.DT);
+            let cur_DT_surface = font.render(&value).solid(Color::WHITE).unwrap();
+            let cur_DT_texture = texture_creator.create_texture_from_surface(&cur_DT_surface).unwrap();
+            self.canvas.copy(&cur_DT_texture,None,Some(Rect::new(0,282,150,15)));
+            let value = format!("ST: {:0>8b} : {:#x}",cpu.sound.ST,cpu.sound.ST);
+            let cur_ST_surface = font.render(&value).solid(Color::WHITE).unwrap();
+            let cur_ST_texture = texture_creator.create_texture_from_surface(&cur_ST_surface).unwrap();
+            self.canvas.copy(&cur_ST_texture,None,Some(Rect::new(0,297,150,15)));
+
+
+
+
+            //process all events in queue
             for event in pump.poll_iter(){
                 match event {
                     Event::Quit { .. } | Event::KeyDown {
                         keycode: Some(Keycode::Space),
                         ..
                     } => {self.live = false; break 'running},
+                    Event::KeyDown{keycode: Some(Keycode::N),..} => {
+                        let op = cpu.fetch();
+                        cpu.decodeAndExecute(op);},
                     _ => {},
                 }
             }
 
 
-
-            let mut font = self.ttf.load_font("/home/chris/Documents/projects/rust-8/src/FiraCode-Regular.ttf",128).unwrap();
-            let texture_creator = self.canvas.texture_creator();
-
-            let text_surface = font.render("String")
-                .blended_wrapped(Color::RGBA(255,255,255,0), 320).unwrap();
-            let text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
-
-            self.canvas.set_draw_color(Color::BLACK);
-            self.canvas.clear();
-
-            self.canvas.copy(&text_texture,None,Some(Rect::new(0,0,120,10)));
-
             self.canvas.present();
-
-            println!("we are debugging");
-            println!("cpu PC is: {:#4x}",cpu.PC);
         }
 
 
