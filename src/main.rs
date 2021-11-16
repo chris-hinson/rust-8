@@ -12,7 +12,7 @@ use std::time::Instant;
 
 //modules for components
 mod debugger;
-use crate::debugger::debugger as debug;
+use crate::debugger::Debugger as Debug;
 
 mod rom;
 use crate::rom::ROM as ROM;
@@ -45,10 +45,15 @@ fn main() {
     //------------------------------------User Input-----------------------------------------------
     let args: Vec<String> = env::args().collect();
     //make sure we got a rom filename
-    if args.len() != 2 {
+    if args.len() < 2 {
         println!("must pass a rom filename!\nExiting.");
         return;
     };
+
+    let mut start_debugging = false;
+    if args.len() == 3{
+        start_debugging = true;
+    }
 
     let filename = "/home/chris/Documents/projects/rust-8/roms/".to_owned() + &args[1];
     //DEBUG: print full filepath to ROM
@@ -57,7 +62,11 @@ fn main() {
 
     //---------------------------------Component instatiation-------------------------------------
     //debugger
-    let mut debugger = debug::new(&sdl_context);
+    let mut debugger = Debug::new(&sdl_context);
+    if start_debugging
+    {
+        debugger.live = true;
+    }
 
     //Memory - includes regs and rom
     let rom = ROM::new(&filename);
@@ -77,8 +86,6 @@ fn main() {
 
     //------------------------------------CPU main loop--------------------------------------------
     let mut cpu = CPU::new(mem, disp, sound, input);
-
-    let mut debug_live = false;
 
     'running: loop {
 
@@ -106,31 +113,31 @@ fn main() {
 
         //execute cpu op
         let raw_op = cpu.fetch();
-        print!("{:#03x}: ",cpu.PC);
-        cpu.decodeAndExecute(raw_op);
+        print!("{:#03x}: ",cpu.pc);
+        cpu.decode_and_execute(raw_op);
 
 
 
         //fencing for the cpu clock
-        while(cpu.LCC.elapsed().as_nanos() < ((1.0/cpu.freq)*1_000_000_000.0) as u128)
+        while cpu.lcc.elapsed().as_nanos() < ((1.0/cpu.freq)*1_000_000_000.0) as u128
         {
             ::std::thread::sleep(Duration::from_nanos(1));
         }
         //update cpu's LCC
-        cpu.LCC = Instant::now();
+        cpu.lcc = Instant::now();
 
         //fencing for timers
         //TODO: i dont think this is ns accurate. check the math
-        if(cpu.sound.ST > 0 && cpu.sound.ST_lu.elapsed().as_nanos() > ((1.0/cpu.sound.freq)*1_000_000_000.0) as u128)
+        if cpu.sound.st > 0 && cpu.sound.st_lu.elapsed().as_nanos() > ((1.0/cpu.sound.freq)*1_000_000_000.0) as u128
         {
-            cpu.sound.ST -=1;
-            cpu.sound.ST_lu = Instant::now();
+            cpu.sound.st -=1;
+            cpu.sound.st_lu = Instant::now();
         }
 
-        if(cpu.sound.DT > 0 && cpu.sound.DT_lu.elapsed().as_nanos() > ((1.0/cpu.sound.freq)*1_000_000_000.0) as u128)
+        if cpu.sound.dt > 0 && cpu.sound.dt_lu.elapsed().as_nanos() > ((1.0/cpu.sound.freq)*1_000_000_000.0) as u128
         {
-            cpu.sound.DT -=1;
-            cpu.sound.DT_lu = Instant::now();
+            cpu.sound.dt -=1;
+            cpu.sound.dt_lu = Instant::now();
         }
     }
     //---------------------------------------------------------------------------------------------

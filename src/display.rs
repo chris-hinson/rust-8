@@ -31,7 +31,7 @@ impl Display {
             .build()
             .unwrap();
 
-        let mut canvas = window.into_canvas().build().unwrap();
+        let canvas = window.into_canvas().build().unwrap();
 
         Display {
             pixels: pixels,
@@ -39,35 +39,35 @@ impl Display {
         }
     }
 
-    pub fn updateDisp(&mut self) {
+    pub fn update_disp(&mut self) {
         for row in self.pixels {
             for pixel in row {
                 if pixel.state {
                     self.canvas.set_draw_color(Color::RED);
-                    self.canvas.fill_rect(pixel.pixel);
+                    self.canvas.fill_rect(pixel.pixel).unwrap();
                 }
                 else{
                     self.canvas.set_draw_color(Color::BLACK);
-                    self.canvas.fill_rect(pixel.pixel);
+                    self.canvas.fill_rect(pixel.pixel).unwrap();
                 }
             }
         }
         self.canvas.present();
     }
 
-    pub fn clearDisp(&mut self) {
+    pub fn clear_disp(&mut self) {
         self.canvas.set_draw_color(Color::BLACK);
         for row in self.pixels {
             for mut pixel in row {
                 pixel.state = false;
-                self.canvas.fill_rect(pixel.pixel);
+                self.canvas.fill_rect(pixel.pixel).unwrap();
             }
         }
         self.canvas.present();
     }
 
     //XORs a sprite into display buffer
-    pub fn pushSprite(&mut self, sprite: sprite) {
+    pub fn push_sprite(&mut self, sprite: Sprite) {
         for pixel in sprite.pixels {
             let x = (pixel.pixel.x / 10) as usize;
             let y = (pixel.pixel.y / 10) as usize;
@@ -94,14 +94,14 @@ impl ScreenPixel {
 }
 //----------------------
 
-pub struct sprite {
+pub struct Sprite {
     pub pixels: Vec<ScreenPixel>,
     pub x: i32,
     pub y: i32,
 }
-impl sprite {
+impl Sprite {
     //expects a u8 vector to construct the sprite from
-    pub fn new(sprite: Vec<u8>, x: i32, y: i32) -> sprite {
+    pub fn new(sprite: Vec<u8>, x: i32, y: i32) -> Sprite {
         //pixels of the sprite, represented as sdl rects
         let mut pixels: Vec<ScreenPixel> = Vec::new();
 
@@ -114,19 +114,19 @@ impl sprite {
                 let temp: u8 = (sprite[i] >> j) & 0x1;
 
                 //if this bit is set, put a square at [x+i][y+j]
-                let rectX = (x * 10 + ((7 - j) * 10) as i32) % 640;
-                let rectY = (y * 10 + (i * 10) as i32) % 320;
+                let rect_x = (x * 10 + ((7 - j) * 10) as i32) % 640;
+                let rect_y = (y * 10 + (i * 10) as i32) % 320;
 
                 if temp == 1 {
                     //println!("found bit! adding rect at x = {}, y = {}", rectX, rectY);
-                    pixels.push(ScreenPixel::new(Rect::new(rectX, rectY, 10, 10), true));
+                    pixels.push(ScreenPixel::new(Rect::new(rect_x, rect_y, 10, 10), true));
                 } else {
-                    pixels.push(ScreenPixel::new(Rect::new(rectX, rectY, 10, 10), false));
+                    pixels.push(ScreenPixel::new(Rect::new(rect_x, rect_y, 10, 10), false));
                 }
             }
         }
 
-        sprite {
+        Sprite {
             pixels: pixels,
             x: x * 10,
             y: y * 10,

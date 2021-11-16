@@ -1,38 +1,43 @@
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use std::time::Instant;
 //-----------------------------------------------Input----------------------------------------------
 pub struct Input {
     pub keys: [bool;16],
+    //nessecary for halt until keypress
+    pub last_key: u8,
+    pub lu: Instant,
 }
 
 impl Input {
     pub fn new() -> Input {
-        Input { keys: [false;16]}
+        Input { keys: [false;16], last_key: 0 ,lu: Instant::now()}
     }
 
     pub fn update(&mut self, event: sdl2::event::Event) {
             match event{
                 Event::KeyDown{keycode: Some(keycodevar), ..} =>
+                    {self.lu = Instant::now();
                     match keycodevar{
-                        Keycode::Num1 =>self.keys[1] = true,
-                        Keycode::Num2 =>self.keys[2] = true,
-                        Keycode::Num3 =>self.keys[3] = true,
-                        Keycode::Num4 =>self.keys[0xc] = true,
-                        Keycode::Q => self.keys[4] = true,
-                        Keycode::W => self.keys[5] = true,
-                        Keycode::E => self.keys[6] = true,
-                        Keycode::R => self.keys[0xd] = true,
-                        Keycode::A => self.keys[7] = true,
-                        Keycode::S => self.keys[8] = true,
-                        Keycode::D => self.keys[9] = true,
-                        Keycode::F => self.keys[0xe] = true,
-                        Keycode::Z => self.keys[0xa] = true,
-                        Keycode::X => self.keys[0] = true,
-                        Keycode::C => self.keys[0xb] = true,
-                        Keycode::V => self.keys[0xf] = true,
+                        Keycode::Num1 =>{self.keys[1] = true; self.last_key = 1},
+                        Keycode::Num2 =>{self.keys[2] =true; self.last_key = 2},
+                        Keycode::Num3 =>{self.keys[3] = true; self.last_key = 3},
+                        Keycode::Num4 =>{self.keys[0xc] = true; self.last_key = 0xc},
+                        Keycode::Q => {self.keys[4] = true; self.last_key = 4},
+                        Keycode::W => {self.keys[5] = true; self.last_key = 5},
+                        Keycode::E => {self.keys[6] = true; self.last_key = 6},
+                        Keycode::R => {self.keys[0xd] = true; self.last_key = 0xd},
+                        Keycode::A => {self.keys[7] = true; self.last_key = 7},
+                        Keycode::S => {self.keys[8] = true; self.last_key = 8},
+                        Keycode::D => {self.keys[9] = true; self.last_key = 9},
+                        Keycode::F => {self.keys[0xe] = true; self.last_key = 0xe},
+                        Keycode::Z => {self.keys[0xa] = true; self.last_key = 0xa},
+                        Keycode::X => {self.keys[0] = true; self.last_key = 0},
+                        Keycode::C => {self.keys[0xb] = true; self.last_key = 0xb},
+                        Keycode::V => {self.keys[0xf] = true; self.last_key = 0xf},
                         _ =>{}
-                    },
+                    }},
                 Event::KeyUp{keycode: Some(keycodevar), ..} =>
                     match keycodevar{
                         Keycode::Num1 =>self.keys[1] = false,

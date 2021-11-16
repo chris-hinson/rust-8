@@ -2,19 +2,18 @@
 use crate::rom::ROM as ROM;
 
 //---------------------------------------------Memory----------------------------------------------
+#[allow(non_snake_case)]
 pub struct Memory {
     //memory
     pub mem: [u8; 4096],
     pub program_base: i32,
 
     //registers
-    pub Vregs: [u8; 16],
+    pub v_regs: [u8; 16],
     pub I: u16,
-    pub Vd: u8,
-    pub Vs: u8,
 
     //stack
-    pub SP: u8,
+    pub sp: u8,
     pub stack: [u16; 16],
 }
 
@@ -23,11 +22,9 @@ impl Memory {
         Memory {
             mem: [0; 4096],
             program_base: 512,
-            Vregs: [0; 16],
+            v_regs: [0; 16],
             I: 0,
-            Vd: 0,
-            Vs: 0,
-            SP: 0,
+            sp: 0,
             stack: [0; 16],
         }
     }
@@ -69,6 +66,7 @@ impl Memory {
     }
 
     //dump memory to console
+    #[allow(dead_code)]
     pub fn dump(&self) {
         //we are always printing 4KB of ROM
         //16 bytes at a time
