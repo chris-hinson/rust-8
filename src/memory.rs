@@ -1,5 +1,4 @@
-
-use crate::rom::ROM as ROM;
+use crate::rom::ROM;
 
 //---------------------------------------------Memory----------------------------------------------
 #[allow(non_snake_case)]
@@ -82,7 +81,7 @@ impl Memory {
                 );
             }
 
-            println!("");
+            println!();
         }
     }
 }

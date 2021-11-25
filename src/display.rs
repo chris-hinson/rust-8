@@ -1,7 +1,6 @@
-
-use sdl2::Sdl;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
+use sdl2::Sdl;
 
 //-----------------------------------------------Display-------------------------------------------
 pub struct Display {
@@ -16,10 +15,12 @@ impl Display {
             [[ScreenPixel::new(Rect::new(0, 0, 10, 10), false); 64]; 32];
 
         //TODO: can we do this in the initializer?
-        for i in 0..32 {
-            for j in 0..64 {
-                pixels[i][j].pixel.x = (j * 10) as i32;
-                pixels[i][j].pixel.y = (i * 10) as i32;
+        //for i in 0..32 {
+        for (i, row) in pixels.iter_mut().enumerate() {
+            //for j in 0..64 {
+            for (j, column) in row.iter_mut().enumerate() {
+                column.pixel.x = (j * 10) as i32;
+                column.pixel.y = (i * 10) as i32;
             }
         }
 
@@ -35,7 +36,7 @@ impl Display {
 
         Display {
             pixels: pixels,
-            canvas: canvas
+            canvas: canvas,
         }
     }
 
@@ -44,12 +45,10 @@ impl Display {
             for pixel in row {
                 if pixel.state {
                     self.canvas.set_draw_color(Color::RED);
-                    self.canvas.fill_rect(pixel.pixel).unwrap();
-                }
-                else{
+                } else {
                     self.canvas.set_draw_color(Color::BLACK);
-                    self.canvas.fill_rect(pixel.pixel).unwrap();
                 }
+                self.canvas.fill_rect(pixel.pixel).unwrap();
             }
         }
         self.canvas.present();
@@ -72,7 +71,7 @@ impl Display {
             let x = (pixel.pixel.x / 10) as usize;
             let y = (pixel.pixel.y / 10) as usize;
             //println!("XORing pixel at x:{}, y:{}", x, y);
-            self.pixels[y][x].state = self.pixels[y][x].state ^ pixel.state;
+            self.pixels[y][x].state ^= pixel.state;
             //println!("pixel at x:{}, y:{} is now: {}", xIndex, yIndex, self.pixels[xIndex][yIndex].state);
         }
     }
@@ -106,12 +105,14 @@ impl Sprite {
         let mut pixels: Vec<ScreenPixel> = Vec::new();
 
         //each u8 is a sprite line
-        for i in 0..sprite.len() {
+        //for i in 0..sprite.len() {
+        for (i, line) in sprite.iter().enumerate() {
             //println!("{:#0b}",sprite[i]);
             //iterate over the bits of the sprite line
             for j in 0..8 {
+                //for (j, bit) in line.iter().enumerate() {
                 //get bit i of line j using bitwise ops
-                let temp: u8 = (sprite[i] >> j) & 0x1;
+                let temp: u8 = (line >> j) & 0x1;
 
                 //if this bit is set, put a square at [x+i][y+j]
                 let rect_x = (x * 10 + ((7 - j) * 10) as i32) % 640;

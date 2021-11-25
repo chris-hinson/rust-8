@@ -1,4 +1,3 @@
-
 pub use std::fs;
 use std::fs::File;
 use std::io::Read;
@@ -12,9 +11,9 @@ impl ROM {
         let mut f = File::open(&filename).expect("file not found");
         let metadata = fs::metadata(&filename).expect("unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
-        f.read(&mut buffer).expect("buffer overflow");
+        f.read_exact(&mut buffer).expect("buffer overflow");
 
-        return ROM { buffer };
+        ROM { buffer }
         //DEBUG: print vec as bytes
         //println!("{:#04x?}", buffer);
     }
