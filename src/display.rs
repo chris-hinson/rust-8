@@ -1,6 +1,9 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::Sdl;
+use std::ops::BitXorAssign;
+
+use crate::memory::Memory;
 
 //-----------------------------------------------Display-------------------------------------------
 pub struct Display {
@@ -27,7 +30,7 @@ impl Display {
         let video_subsystem = sdl_context.video().unwrap();
 
         let window = video_subsystem
-            .window("rust-sdl2 demo", 640, 320)
+            .window("rust-8", 640, 320)
             .position_centered()
             .build()
             .unwrap();
@@ -43,10 +46,9 @@ impl Display {
     pub fn update_disp(&mut self) {
         for row in self.pixels {
             for pixel in row {
+                self.canvas.set_draw_color(Color::BLACK);
                 if pixel.state {
                     self.canvas.set_draw_color(Color::RED);
-                } else {
-                    self.canvas.set_draw_color(Color::BLACK);
                 }
                 self.canvas.fill_rect(pixel.pixel).unwrap();
             }
@@ -55,24 +57,47 @@ impl Display {
     }
 
     pub fn clear_disp(&mut self) {
-        self.canvas.set_draw_color(Color::BLACK);
-        for row in self.pixels {
-            for mut pixel in row {
+        for (_i, row) in self.pixels.iter_mut().enumerate() {
+            for (_j, pixel) in row.iter_mut().enumerate() {
                 pixel.state = false;
-                self.canvas.fill_rect(pixel.pixel).unwrap();
             }
         }
+        //self.update_disp();
+        self.canvas.set_draw_color(Color::BLACK);
+        //self.canvas.fill_rect(None).unwrap();
+        self.canvas.clear();
+        //self.update_disp();
         self.canvas.present();
     }
 
     //XORs a sprite into display buffer
-    pub fn push_sprite(&mut self, sprite: Sprite) {
+    //this only updates the state bool, does not actually draw
+    pub fn push_sprite(&mut self, sprite: Sprite, mem: &mut Memory) {
+        let mut draw_over_flag = false;
         for pixel in sprite.pixels {
             let x = (pixel.pixel.x / 10) as usize;
             let y = (pixel.pixel.y / 10) as usize;
+
+            let prev_value = self.pixels[y][x];
             //println!("XORing pixel at x:{}, y:{}", x, y);
-            self.pixels[y][x].state ^= pixel.state;
+            self.pixels[y][x].state.bitxor_assign(pixel.state);
             //println!("pixel at x:{}, y:{} is now: {}", xIndex, yIndex, self.pixels[xIndex][yIndex].state);
+            let new_value = self.pixels[y][x];
+
+            //compliance with drw opcode
+            if prev_value.state == true && new_value.state == false {
+                draw_over_flag = true;
+                /*println!(
+                    "hit xor x:{:x}, y:{:x}, state:{}",
+                    x, y, self.pixels[y][x].state
+                );*/
+            }
+        }
+
+        if draw_over_flag {
+            mem.v_regs[0xf] = 0x1;
+        } else {
+            mem.v_regs[0xf] = 0x0;
         }
     }
 }

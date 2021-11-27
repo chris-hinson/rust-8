@@ -84,5 +84,25 @@ impl Memory {
             println!();
         }
     }
+
+    #[allow(dead_code)]
+    #[allow(unused_variables)]
+    //takes base and number of lines of 8 bytes to print
+    pub fn inspect(&self, base: usize, lines: usize) -> String {
+        let mut line = String::new();
+
+        for i in 0..lines {
+            for j in 0..8 {
+                line.push_str(&*format!(
+                    "{:02x}{:02x} ",
+                    self.mem[base + (i * 16) + (j * 2)],
+                    self.mem[base + (i * 16) + ((j * 2) + 1)],
+                ));
+            }
+        }
+
+        //println!("{}", line);
+        return line;
+    }
 }
 //-------------------------------------------------------------------------------------------------
