@@ -50,7 +50,8 @@ fn main() {
         start_debugging = true;
     }
 
-    let filename = "/home/chris/Documents/projects/rust-8/roms/".to_owned() + &args[1];
+    //let filename = "/home/chris/Documents/projects/rust-8/roms/".to_owned() + &args[1];
+    let filename = "./".to_owned() + &args[1];
     //DEBUG: print full filepath to ROM
     //println!("{}",filename);
     //---------------------------------------------------------------------------------------------
