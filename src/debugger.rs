@@ -41,7 +41,7 @@ impl Debugger {
         let font = self
             .ttf
             .load_font(
-                "/home/chris/Documents/projects/rust-8/src/FiraCode-Regular.ttf",
+                "./".to_owned()+"src/FiraCode-Regular.ttf",
                 128,
             )
             .unwrap();
